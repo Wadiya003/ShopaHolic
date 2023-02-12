@@ -12,14 +12,14 @@ export default function ProductScreen(props) {
   const { product } = props;
   const { state, dispatch } = useContext(Store);
   const router = useRouter();
-  const src = product.image;
+  // const src = product.image;
   if (!product) {
     return <Layout title="Produt Not Found">Produt Not Found</Layout>;
   }
   const addToCartHandler = async () => {
     const existItem = state.cart.cartItems.find((x) => x.id === product.id);
     const quantity = existItem ? existItem.quantity + 1 : 1;
-    const { data } = await axios.get(`/api/product/${product._id}`);
+    const { data } = await axios.get(`/product/${product._id}`);
     if (data.stock < quantity) {
       return Toast.error("Sorry. Product is out of stock");
     }
@@ -36,7 +36,7 @@ export default function ProductScreen(props) {
         <div className="md:col-span-2">
           <Image
             loader={() => src}
-            src={src}
+            src={product.image}
             alt={product.name}
             width={640}
             height={640}

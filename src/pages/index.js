@@ -3,7 +3,7 @@ import { Inter } from '@next/font/google'
 import ProductItem from '@/components/ProductItem'
 import Product from '@/models/Product';
 import data from '@/utils/Data'
-import { Store } from '@/utils/Store'
+import { Store } from '@/utils/Store' 
 import { useContext } from 'react'
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -18,8 +18,9 @@ export default function Home({products}) {
   const addToCartHandler = async (product) => {
     const existItem = cart.cartItems.find((x) => x.slug === product.slug);
     const quantity = existItem ? existItem.quantity + 1 : 1;
-    const { data } = await axios.get(`/api/products/${product._id}`);
-
+    const { data } = await axios.get(`/product/${product._id}`);
+    console.log("d")
+    console.log(data);
     if (data.stock < quantity) {
       return toast.error('Sorry. Product is out of stock');
     }
