@@ -81,6 +81,7 @@ export async function getServerSideProps(context) {
   const { slug } = params;
   await DB.connect();
   const product = await Product.findOne({ slug }).lean();
+  console.log(product);
   await DB.disconnect();
   return {
     props: {

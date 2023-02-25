@@ -7,7 +7,6 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
   const contentType = "application/json";
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
-
   const [form, setForm] = useState({
     name: productForm.name,
     slug: productForm.owner_name,
@@ -20,34 +19,7 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
     image: productForm.image,
   });
 
-  /* The PUT method edits an existing entry in the mongodb database. */
-  // const putData = async (form) => {
-  //   const { id } = router.query
-
-  //   try {
-  //     const res = await fetch(`/api/product/${id}`, {
-  //       method: 'PUT',
-  //       headers: {
-  //         Accept: contentType,
-  //         'Content-Type': contentType,
-  //       },
-  //       body: JSON.stringify(form),
-  //     })
-
-  //     // Throw error with status code in case Fetch API req failed
-  //     if (!res.ok) {
-  //       throw new Error(res.status)
-  //     }
-
-  //     const { data } = await res.json()
-
-  //     mutate(`/product/${id}`, data, false) // Update the local data without a revalidation
-  //     router.push('/manageproduct')
-  //   } catch (error) {
-  //     setMessbrand('Failed to update product')
-  //   }
-  // }
-
+  
   /* The POST method adds a new entry in the mongodb database. */
   const postData = async (form) => {
     try {
@@ -73,7 +45,7 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
 
   const handleChange = (e) => {
     const target = e.target;
-    const value = target.name === "category" ? target.checked : target.value;
+    const value = target.value;
     const name = target.name;
 
     setForm({
@@ -86,7 +58,7 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
   const formValidate = () => {
     let err = {};
     if (!form.name) err.name = "Name is required";
-    // if (!form.image) err.image = "Image is required";
+    if (!form.image) err.image = "Image is required";
     if (!form.slug) err.slug= "Slug is required";
     if (!form.description) err.description = "Description is required";
     if (!form.stock) err.stock = "Stock URL is required";
@@ -105,7 +77,7 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
         setMessage("Product added successfully");
     }
     else{
-        setMessage("Failed to add prodcuts");
+        setMessage("Failed to add products");
     }
     setErrors(errs);
     //set fields to empty

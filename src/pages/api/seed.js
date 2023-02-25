@@ -6,6 +6,7 @@ import ProductItem from "@/models/Product";
 const handler=async(req,res)=>{
     const {method}=req;
     await DB.connect();
+    
     await User.deleteMany();
     await User.insertMany(data.users);
     // await ProductItem.deleteMany();
@@ -29,7 +30,7 @@ const handler=async(req,res)=>{
             res.status(201).json({ success: true, data: product })
             console.log("Done")
           } catch (error) {
-            console.log("Error")
+            console.log(error);
             res.status(400).json({ success: false })
           }
           break

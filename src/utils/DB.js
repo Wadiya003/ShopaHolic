@@ -1,24 +1,25 @@
 import { mongoose } from 'mongoose';
 
-
 const connection ={};
 async function connect(){
+    mongoose.set('strictQuery', true);
     if(connection.isConnected){
         console.log("Connected");
         return;
     }
     //have connection in queue
-    if(mongoose.connections.length>0){
+    if(mongoose?.connections?.length>0){
         //get ready state of first connection
         connection.isConnected=mongoose.connections[0].readyState;
         if(connection.isConnected===1){
-            console.log("Connected");
+            console.log("Connecteion in queue");
             return;
         }
         await mongoose.disconnect();
     }
     const db= await mongoose.connect(process.env.MONGODB_URI);
     connection.isConnected=db.connections[0].readyState;
+    
 }
 //disconnect function
 async function disconnect(){
