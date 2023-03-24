@@ -6,8 +6,28 @@ import { XCircleIcon } from "@heroicons/react/outline";
 import { Store } from "@/utils/Store";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+
 function Cart() {
+
   const router = useRouter();
+  const { data: session } = useSession();
+  const { redirect } = router.query;
+
+  useEffect(() => {
+    console.log(session?.user)
+    if (session?.user) {
+      if (session?.user?.isAdmin){
+      //redirect to admin page
+      toast.error("Admins cannot access this page");
+       router.push("/admin");
+      }
+    }
+  }, [router, session, redirect]);
+
   const { state, dispatch } = useContext(Store);
   const {
     cart: { cartItems },
@@ -16,7 +36,7 @@ function Cart() {
     dispatch({ type: "CART_REMOVE_ITEM", payload: item });
   };
   const updateCartHandler = async (item, qty) => {
-    // const quantity = Number(qty);
+    const quantity = Number(qty);
     const { data } = await axios.get(`/product/${item._id}`);
     if (data.stock < quantity) {
       return toast.error("Sorry. Product is out of stock");

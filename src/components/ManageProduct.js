@@ -3,6 +3,7 @@ import React from "react";
 // import Product from "@/models/Product";
 import { useRouter } from "next/router";
 import { useState } from "react";
+
 export default function ManageProduct({ product }) {
   const router = useRouter();
   const [message, setMessage] = useState("");
@@ -11,7 +12,7 @@ export default function ManageProduct({ product }) {
     try {
       await fetch(`/api/admin/products/${id}`, {
         method: "DELETE",
-        body:JSON.stringify({id:id}),
+        body: JSON.stringify({ id: id }),
       });
       console.log("Deleted");
       router.reload();
@@ -19,6 +20,7 @@ export default function ManageProduct({ product }) {
       setMessage("Failed to delete the product.");
     }
   };
+
   return (
     <div className="card">
       <img
@@ -32,12 +34,17 @@ export default function ManageProduct({ product }) {
 
         <p className="mb-2">{product.brand}</p>
         <p>${product.price}</p>
-        <button className="primary-button" type="button" onClick={() => handleDelete(product._id)}>
+        <button
+          className="primary-button"
+          type="button"
+          onClick={() => handleDelete(product?._id)}
+        >
           Delete
         </button>
-        <button className="primary-button" type="button">
+
+        <Link href={`/admin/${product?._id}`} >
           Edit
-        </button>
+        </Link>
       </div>
     </div>
   );

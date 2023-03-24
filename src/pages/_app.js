@@ -6,7 +6,6 @@ export default function App({
   Component,
   pageProps: { session, ...pageProps },
 }) {
-  // console.log(session);
   return (
     <SessionProvider session={session}>
       <StoreProvider>

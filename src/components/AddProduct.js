@@ -1,28 +1,68 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { mutate } from "swr";
-const AddProduct = ({ productForm, forNewProduct = true }) => {
+import axios from "axios";
+const AddProduct = ({ formId, productForm, forNewProduct }) => {
   const router = useRouter();
   const contentType = "application/json";
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
-  const [form, setForm] = useState({
-    name: productForm.name,
-    slug: productForm.owner_name,
-    description: productForm.description,
-    brand: productForm.brand,
-    category: productForm.category,
-    price: productForm.price,
-    stock: productForm.stock,
-    rating: productForm.rating,
-    image: productForm.image,
-  });
+  const [form, setForm] = useState({});
+  const [file, setFile] = useState();
+  useEffect(() => {
+    setForm({
+      name: productForm.name,
+      slug: productForm.slug,
+      description: productForm.description,
+      brand: productForm.brand,
+      category: productForm.category,
+      price: productForm.price,
+      stock: productForm.stock,
+      rating: productForm.rating,
+      // image: "",
+      //get the filename
+      image: productForm.image,
+    });
+  }, []);
+  //edit
+  const putData = async (form) => {
 
-  
+    const id = productForm._id;
+    // console.log(id);
+    //edit image in cloudinary
+    
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, {
+        method: "PUT",
+        headers: {
+          Accept: contentType,
+          "Content-Type": contentType,
+        },
+        body: JSON.stringify({ id, ...form }),
+      });
+      console.log(res);
+      // Throw error with status code in case Fetch API req failed
+      if (!res?.ok) {
+        throw new Error(res.status);
+      }
+      const { data } = await res.json();
+      mutate(`/api/admin/products/${id}`, data, false); // Update the local data without a revalidation
+      router.reload();
+    } catch (error) {
+      console.log(error);
+      setMessage("Failed to update");
+    }
+  };
   /* The POST method adds a new entry in the mongodb database. */
   const postData = async (form) => {
     try {
+      // form.image = form.image.replace("C:\\fakepath\\", "https://");
+      // console.log("Hereee: " + form.image);
+      const imageURL = await imageUpload(file);
+      console.log(imageURL);
+      form.image = await imageURL;
+      console.log(form.image);
       const res = await fetch("/api/seed", {
         method: "POST",
         headers: {
@@ -35,23 +75,44 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
       // Throw error with status code in case Fetch API req failed
       if (!res.ok) {
         throw new Error(res.status);
-      }  
+      }
       router.reload();
-
     } catch (error) {
       setMessage("Failed to add product");
     }
+    return res;
+  };
+  const imageUpload = async (imageFile) => {
+    console.log("Img: " + imageFile);
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("upload_preset", "Shopaholic_uploads");
+    formData.append("cloud_name", "dpeauwce7");
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dpeauwce7/image/upload",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+    const res2 = await res.json();
+    console.log(res2);
+    return res2.url;
   };
 
   const handleChange = (e) => {
     const target = e.target;
     const value = target.value;
     const name = target.name;
-
+    // console.log("i am e", e);
     setForm({
       ...form,
       [name]: value,
     });
+  };
+
+  const handleImageChange = (e) => {
+    setFile(e.target.files[0]);
   };
 
   /* Makes sure product info is filled for product name, owner name, description, and imbrand url*/
@@ -59,7 +120,7 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
     let err = {};
     if (!form.name) err.name = "Name is required";
     if (!form.image) err.image = "Image is required";
-    if (!form.slug) err.slug= "Slug is required";
+    if (!form.slug) err.slug = "Slug is required";
     if (!form.description) err.description = "Description is required";
     if (!form.stock) err.stock = "Stock URL is required";
     if (!form.rating) err.rating = "Rating URL is required";
@@ -69,35 +130,34 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
     return err;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const errs = formValidate();
-    // postData(form);
-    if(postData(form)){
-        setMessage("Product added successfully");
-    }
-    else{
-        setMessage("Failed to add products");
-    }
-    setErrors(errs);
+    // const errs = formValidate();
+    // if (Object.keys(errs).length === 0) {
+    //   forNewProduct ? postData(form) : postData(form);
+    // } else {
+    //   setErrors({ errs });
+    // }
+    const res = await postData(form);
+    console.log(res);
+
     //set fields to empty
     setForm({
-        name:"",
-        slug:"",
-        brand:"",
-        description: "",
-        category: "",
-        price: 0,
-        stock: 0,
-        rating: 0,
-        image:""
-    })
-   
+      name: "",
+      slug: "",
+      brand: "",
+      description: "",
+      category: "",
+      price: 0,
+      stock: 0,
+      rating: 0,
+      image: "",
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="h-min grid grid-rows-3 grid-flow-col gap-4 p-5">
+    <form id={formId} onSubmit={handleSubmit}>
+      <div className="h-min grid grid-rows-1 grid-flow-col gap-4 p-5">
         <div className=" row-span-3 mt-5 mx:2">
           <div className="shadow sm:overflow-hidden sm:rounded-md">
             <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
@@ -129,17 +189,21 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
                         <span>Upload a file</span>
                         <input
                           id="file-upload"
+                          accept="image/*"
                           name="image"
-                          value={productForm.image}
-                          onChange={handleChange}
+                          defaultValue={form?.image}
+                          onChange={(e) => handleImageChange(e)}
                           type="file"
                           className="sr-only"
                         />
                       </label>
-                      <p className="pl-1">or drag and drop</p>
+        {/* print image file if exist */}
+                      {/* 
+                      {form?.image && <img className="h-auto w-auto rounded-full" src={form.image} alt="img"></img>} */}
+                      
                     </div>
                     <p className="text-xs text-gray-500">
-                      PNG, JPG, GIF up to 10MB
+                      PNG or JPG/JPEG up to 10MB
                     </p>
                   </div>
                 </div>
@@ -167,8 +231,8 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
               <input
                 type="text"
                 name="name"
-                value={form.name}
-                onChange={handleChange}
+                value={form?.name}
+                onChange={(e) => handleChange(e)}
                 id="product-name"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
               />
@@ -181,8 +245,8 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
               <input
                 type="text"
                 name="slug"
-                value={form.slug}
-                onChange={handleChange}
+                value={form?.slug}
+                onChange={(e) => handleChange(e)}
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
               />
             </div>
@@ -196,8 +260,8 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
               <input
                 type="text"
                 name="brand"
-                value={form.brand}
-                onChange={handleChange}
+                value={form?.brand}
+                onChange={(e) => handleChange(e)}
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
               />
             </div>
@@ -212,8 +276,8 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
               <input
                 type="text"
                 name="stock"
-                value={form.stock}
-                onChange={handleChange}
+                value={form?.stock}
+                onChange={(e) => handleChange(e)}
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
               />
             </div>
@@ -228,8 +292,8 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
               <input
                 type="text"
                 name="rating"
-                value={form.rating}
-                onChange={handleChange}
+                value={form?.rating}
+                onChange={(e) => handleChange(e)}
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
               />
             </div>
@@ -244,8 +308,8 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
               <input
                 type="text"
                 name="price"
-                value={form.price}
-                onChange={handleChange}
+                value={form?.price}
+                onChange={(e) => handleChange(e)}
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
               />
             </div>
@@ -261,8 +325,8 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
               <input
                 type="text"
                 name="category"
-                value={form.category}
-                onChange={handleChange}
+                value={form?.category}
+                onChange={(e) => handleChange(e)}
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
               />
             </div>
@@ -276,15 +340,15 @@ const AddProduct = ({ productForm, forNewProduct = true }) => {
               <textarea
                 placeholder="Description"
                 name="description"
-                value={form.description}
-                onChange={handleChange}
+                value={form?.description}
+                onChange={(e) => handleChange(e)}
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
               />
             </div>
           </div>
         </div>
+        <p>{message}</p>
       </div>
-      <p>{message}</p>
     </form>
   );
 };

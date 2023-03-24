@@ -10,16 +10,30 @@ import { toast } from "react-toastify";
 import DB from "@/utils/DB";
 import Carousel from "@/components/Carousel";
 const inter = Inter({ subsets: ["latin"] });
-
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 export default function Home({ products }) {
   const { state, dispatch } = useContext(Store);
   const { cart } = state;
+  const { data: session } = useSession();
+  const router = useRouter();
+  const { redirect } = router.query;
 
+  useEffect(() => {
+    console.log(session?.user)
+    if (session?.user) {
+      if (session?.user?.isAdmin) router.push("/admin");
+      else router.push("/");
+    }
+  }, [router, session, redirect]);
+  
+  
   const addToCartHandler = async (product) => {
     const existItem = cart.cartItems.find((x) => x.slug === product.slug);
     const quantity = existItem ? existItem.quantity + 1 : 1;
     const { data } = await axios.get(`/product/${product._id}`);
-    console.log("d");
+    console.log("Data: ");
     console.log(data);
     if (data.stock < quantity) {
       return toast.error("Sorry. Product is out of stock");
@@ -44,7 +58,8 @@ export default function Home({ products }) {
       </Layout>
     </>
   );
-}
+  }
+
 
 //get all data from mongodb before prerendering the page
 export async function getServerSideProps() {

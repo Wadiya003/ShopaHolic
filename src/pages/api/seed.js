@@ -2,7 +2,6 @@ import DB from "@/utils/DB";
 import Product from "@/models/Product"
 import User from "@/models/User";
 import data from "@/utils/data"
-import ProductItem from "@/models/Product";
 const handler=async(req,res)=>{
     const {method}=req;
     await DB.connect();
@@ -22,8 +21,11 @@ const handler=async(req,res)=>{
           break
         case 'POST':
           try {
-            console.log(req.body)
+            console.log(req.body.image)
             console.log("Here")
+            //upload image to cloudinary
+            // const result = await cloudinary.uploader.upload(req.body.image, {})
+            // req.body.image = result.secure_url;
             const product = await Product.create(
               req.body
             ) /* create a new model in the database */

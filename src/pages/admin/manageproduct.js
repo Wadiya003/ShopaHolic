@@ -52,7 +52,7 @@ export default function Manage_Product({products}) {
         {/* add Product and show product */}
         <div class="p-5 block text-lg text-center	font-medium text-gray-800" > Add Product</div>
         <hr/>
-        <AddProduct formId="add-poduct-form" productForm={productForm}/>
+        <AddProduct formId="add-poduct-form" productForm={productForm} forNewProduct={true}/>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
         {products.map((product) => (
           <ManageProduct

@@ -8,11 +8,27 @@ import { Store } from "@/utils/Store";
 import DB from "@/utils/DB";
 import Product from "@/models/Product";
 import { Toast } from "react-toastify";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+
 export default function ProductScreen(props) {
   const { product } = props;
   const { state, dispatch } = useContext(Store);
   const router = useRouter();
-  // const src = product.image;
+  //no admin access
+  const { data: session } = useSession();
+  const { redirect } = router.query;
+  useEffect(() => {
+    console.log(session?.user)
+    if (session?.user) {
+      if (session?.user?.isAdmin){
+      //redirect to admin page
+      //print error message
+      router.push("/admin");
+      }
+    }
+  }, [router, session, redirect]);
+
   if (!product) {
     return <Layout title="Produt Not Found">Produt Not Found</Layout>;
   }
@@ -29,29 +45,30 @@ export default function ProductScreen(props) {
 
   return (
     <Layout title={product.name}>
-      <div className="py-2">
-        <Link href="/">Back to Home</Link>
-      </div>
-      <div className="grid md:grid-cols-4 md:gap-3">
+      
+      <div className="grid md:grid-cols-4 md:gap-auto">
         <div className="md:col-span-2">
-          <Image
-            loader={() => src}
+          <img
+            className="rounded border h-fit md:w-5/6"
             src={product.image}
             alt={product.name}
             width={640}
             height={640}
-          ></Image>
+          ></img>
         </div>
         <div>
-          <ul>
+          <ul className="font-serif mt-0 mb-2 text-base font-extralight" >
             <li>
-              <h1 className="text-lg">{product.name}</h1>
+              <h1 className="font-serif mt-0 mb-2 text-5xl">{product.name}</h1>
             </li>
             <li>Category: {product.category}</li>
             <li>Brand: {product.brand}</li>
             <li>Rating: {product.rating}</li>
             <li>Description: {product.description}</li>
           </ul>
+          <button className="primary-button my-3">
+        <Link href="/">Back to Home</Link>
+        </button>
         </div>
         <div>
           <div className="card p-5">
@@ -70,7 +87,9 @@ export default function ProductScreen(props) {
               Add to cart
             </button>
           </div>
+          
         </div>
+        
       </div>
     </Layout>
   );

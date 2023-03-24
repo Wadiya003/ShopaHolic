@@ -2,17 +2,18 @@ import React from "react";
 import Link from "next/link";
 import "react-toastify/dist/ReactToastify.css";
 import { Menu } from "@headlessui/react";
-import DropdownLink from "@/components/Dropdown";
 import { signOut, useSession } from "next-auth/react";
-import { useContext, useEffect, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/router";
+
 export default function Admin() {
   const logoutClickHandler = () => {
     signOut({ callbackUrl: "/login" });
   };
-
+  const router = useRouter();
   const { status, data: session } = useSession();
   const numrows = 10;
-  if (status === session?.user) console.log(status);
+  // if (status === session?.user) console.log(status);
   const [showMe, setShowMe] = useState(true);
   function toggle() {
     setShowMe(!showMe);
@@ -22,7 +23,7 @@ export default function Admin() {
       <div className="flex min-h-screen flex-col justify-between ">
         <header>
           <nav className="flex h-12 items-center px-4 justify-between shadow-md">
-            <button onClick={toggle}>Menu</button>
+            <button onClick={toggle}>Dashhboard</button>
             <Link href="/admin" className="text-lg font-bold">
               ShopaHolic
             </Link>
@@ -57,18 +58,6 @@ export default function Admin() {
             }
           >
             <ul class="list-reset flex flex-col">
-              <li class=" w-full h-full py-3 px-2 border-b border-light-border bg-white">
-                <a
-                  href="index.html"
-                  class="font-sans font-hairline hover:font-normal text-sm text-nav-item no-underline"
-                >
-                  <i class="fas fa-tachometer-alt float-left mx-2"></i>
-                  Dashboard
-                  <span>
-                    <i class="fas fa-angle-right float-right"></i>
-                  </span>
-                </a>
-              </li>
               <li class="w-full h-full py-3 px-2 border-b border-light-border">
                 <Link
                   href="/admin/manageproduct"
@@ -514,7 +503,7 @@ export default function Admin() {
       </div>
     );
   } else {
-    return <p>Not authorize</p>;
-  }
-  return <p>Not authorize</p>;
+  //redirect to login page
+  return <div> You ain't an admin, click here to go <Link href="/login">LOGIN</Link></div>
+}
 }
