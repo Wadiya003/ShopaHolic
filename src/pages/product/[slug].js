@@ -22,15 +22,13 @@ export default function ProductScreen(props) {
     console.log(session?.user)
     if (session?.user) {
       if (session?.user?.isAdmin){
-      //redirect to admin page
-      //print error message
       router.push("/admin");
       }
     }
   }, [router, session, redirect]);
 
   if (!product) {
-    return <Layout title="Produt Not Found">Produt Not Found</Layout>;
+    return <Layout title="Product Not Found">Produt Not Found</Layout>;
   }
   const addToCartHandler = async () => {
     const existItem = state.cart.cartItems.find((x) => x.id === product.id);

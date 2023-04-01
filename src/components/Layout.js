@@ -19,6 +19,18 @@ export default function Layout({ title, children }) {
   useEffect(() => {
     setCartItemsCount(cart.cartItems.reduce((a, c) => a + c.quantity, 0));
   }, [cart.cartItems]);
+  //search query
+  const [query, setQuery] = useState("");
+  //search handler
+  const searchHandler = (e) => {
+    console.log(query);
+    e.preventDefault();
+    if (query) {
+      // router.push(`/api/product?query=${query}`);
+    } else {
+      router.push("/");
+    }
+  };
 
   //logout
   const logoutClickHandler = () => {
@@ -42,7 +54,7 @@ export default function Layout({ title, children }) {
               ShopaHolic
             </Link>
             <form
-              // onSubmit={}
+              onSubmit={searchHandler}
               className="mx-auto hidden w-4/6 justify-center md:flex"
             >
               <input

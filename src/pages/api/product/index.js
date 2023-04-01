@@ -1,36 +1,29 @@
 import DB from "@/utils/DB";
 import Product from "@/models/Product"
-import User from "@/models/User";
-import data from "@/utils/data"
+
 const handler=async(req,res)=>{
     const {method}=req;
     await DB.connect();
-    
-    await User.deleteMany();
-    await User.insertMany(data.users);
-    // await ProductItem.deleteMany();
-    // await ProductItem.insertMany(data.products);
     switch (method) {
         case 'GET':
           try {
-            const products = await Product.find({}) /* find all the data in our database */
-            res.status(200).json({ success: true, data: products })
+            /* find data by an */
+            const products = await Product.find({}) 
+            //get total number of products
+            const total = await Product.find({}).countDocuments();
+            res.status(200).json({ success: true, data: products, total: total })
           } catch (error) {
             res.status(400).json({ success: false })
           }
           break
         case 'POST':
           try {
-            console.log(req.body.image)
-            console.log("Here")
-            //upload image to cloudinary
-            // const result = await cloudinary.uploader.upload(req.body.image, {})
-            // req.body.image = result.secure_url;
+          
             const product = await Product.create(
               req.body
-            ) /* create a new model in the database */
+            )
             res.status(201).json({ success: true, data: product })
-            console.log("Done")
+            console.log("Product added!")
           } catch (error) {
             console.log(error);
             res.status(400).json({ success: false })

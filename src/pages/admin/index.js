@@ -18,6 +18,38 @@ export default function Admin() {
   function toggle() {
     setShowMe(!showMe);
   }
+//get total number of users from database
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
+  React.useEffect(() => {
+    fetch(`/api/user`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setTotalUsers(data.data);
+      })
+      
+      .catch((err) => console.log(err));
+      fetch(`/api/product`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+        .then((res) => res.json())
+        .then((data) => {
+          setTotalProducts(data.total);
+        }
+        )
+        .catch((err) => console.log(err));
+
+  }, []);
+
   if (session?.user?.isAdmin) {
     return (
       <div className="flex min-h-screen flex-col justify-between ">
@@ -123,7 +155,8 @@ export default function Admin() {
                 <div class="shadow bg-yellow-400 border-l-8 hover:bg-yellow-500 border-warning-dark mb-2 p-2 md:w-1/4 mx-2">
                   <div class="p-4 flex flex-col">
                     <a href="#" class="no-underline text-white text-2xl">
-                      900
+                    {/* show total number of users from database */}
+                      {totalUsers}
                     </a>
                     <a href="#" class="no-underline text-white text-lg">
                       Total Users
@@ -134,7 +167,7 @@ export default function Admin() {
                 <div class="shadow bg-lime-400 border-l-8 hover:bg-lime-500 border-success-dark mb-2 p-2 md:w-1/4 mx-2">
                   <div class="p-4 flex flex-col">
                     <a href="#" class="no-underline text-white text-2xl">
-                      500
+                    {totalProducts}
                     </a>
                     <a href="#" class="no-underline text-white text-lg">
                       Total Products

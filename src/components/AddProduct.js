@@ -20,18 +20,38 @@ const AddProduct = ({ formId, productForm, forNewProduct }) => {
       price: productForm.price,
       stock: productForm.stock,
       rating: productForm.rating,
-      // image: "",
-      //get the filename
       image: productForm.image,
     });
   }, []);
+
   //edit
   const putData = async (form) => {
-
+    console.log("form", form); 
     const id = productForm._id;
-    // console.log(id);
-    //edit image in cloudinary
-    
+    console.log(productForm.image);
+    console.log(file);
+    if (file !== productForm.image) {
+      //delete old image
+      const public_id = productForm.image.split("/").pop().split(".")[0];
+      const { result } = await delete(
+        `https://api.cloudinary.com/v1_1/dpeauwce7/image/destroy`,
+        {
+          data: {
+            public_id,
+          },
+        }
+      );
+
+      if (result === "not found")
+        throw new BadRequestError("Please provide correct public_id");
+      // if (result !== "ok") throw new Error("Try again later.");
+      //upload on cloudinary
+      const imageURL = await imageUpload(file);
+      console.log(imageURL);
+      form.image = await imageURL;
+      console.log(form.image);
+    }
+
     try {
       const res = await fetch(`/api/admin/products/${id}`, {
         method: "PUT",
@@ -48,22 +68,22 @@ const AddProduct = ({ formId, productForm, forNewProduct }) => {
       }
       const { data } = await res.json();
       mutate(`/api/admin/products/${id}`, data, false); // Update the local data without a revalidation
-      router.reload();
+       router.push("/admin/manageproducts");
+      return res;
     } catch (error) {
       console.log(error);
-      setMessage("Failed to update");
+      setMessage("Failed to update product");
     }
+   
   };
   /* The POST method adds a new entry in the mongodb database. */
   const postData = async (form) => {
     try {
-      // form.image = form.image.replace("C:\\fakepath\\", "https://");
-      // console.log("Hereee: " + form.image);
       const imageURL = await imageUpload(file);
       console.log(imageURL);
       form.image = await imageURL;
       console.log(form.image);
-      const res = await fetch("/api/seed", {
+      const res = await fetch("/api/product", {
         method: "POST",
         headers: {
           Accept: contentType,
@@ -71,8 +91,6 @@ const AddProduct = ({ formId, productForm, forNewProduct }) => {
         },
         body: JSON.stringify(form),
       });
-
-      // Throw error with status code in case Fetch API req failed
       if (!res.ok) {
         throw new Error(res.status);
       }
@@ -80,8 +98,9 @@ const AddProduct = ({ formId, productForm, forNewProduct }) => {
     } catch (error) {
       setMessage("Failed to add product");
     }
-    return res;
+   return res;
   };
+
   const imageUpload = async (imageFile) => {
     console.log("Img: " + imageFile);
     const formData = new FormData();
@@ -104,7 +123,6 @@ const AddProduct = ({ formId, productForm, forNewProduct }) => {
     const target = e.target;
     const value = target.value;
     const name = target.name;
-    // console.log("i am e", e);
     setForm({
       ...form,
       [name]: value,
@@ -112,35 +130,37 @@ const AddProduct = ({ formId, productForm, forNewProduct }) => {
   };
 
   const handleImageChange = (e) => {
+    console.log(e.target.files[0]);
     setFile(e.target.files[0]);
   };
 
-  /* Makes sure product info is filled for product name, owner name, description, and imbrand url*/
   const formValidate = () => {
     let err = {};
     if (!form.name) err.name = "Name is required";
-    if (!form.image) err.image = "Image is required";
+    // if (!form.image) err.image = "Image is required";
     if (!form.slug) err.slug = "Slug is required";
     if (!form.description) err.description = "Description is required";
-    if (!form.stock) err.stock = "Stock URL is required";
-    if (!form.rating) err.rating = "Rating URL is required";
+    // if (!form.stock) err.stock = "Stock URL is required";
+    // if (!form.rating) err.rating = "Rating URL is required";
     if (!form.category) err.category = "Category URL is required";
     if (!form.brand) err.brand = "Brand is required";
-    if (!form.price) err.price = "Price is required";
+    // if (!form.price) err.price = "Price is required";
     return err;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // const errs = formValidate();
-    // if (Object.keys(errs).length === 0) {
-    //   forNewProduct ? postData(form) : postData(form);
-    // } else {
-    //   setErrors({ errs });
-    // }
-    const res = await postData(form);
-    console.log(res);
-
+    const errs = formValidate();
+    console.log("Here");
+    if (Object.keys(errs).length === 0) {
+      console.log("New: ",forNewProduct);
+      //call post or put method according to forNewProduct
+      const res=forNewProduct?await postData(form):await putData(form);
+  }
+    else {
+      console.log("Errors: ", errs)
+      setErrors({ errs });
+    }
     //set fields to empty
     setForm({
       name: "",
@@ -181,12 +201,12 @@ const AddProduct = ({ formId, productForm, forNewProduct }) => {
                         strokeLinejoin="round"
                       />
                     </svg>
-                    <div className="flex text-sm text-gray-600">
+                    <div className="flex flex-col justify-center items-center  text-sm text-gray-600">
                       <label
                         htmlFor="file-upload"
                         className="relative cursor-pointer rounded-md bg-white font-medium text-red-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-red-500 focus-within:ring-offset-2 hover:text-red-500"
                       >
-                        <span>Upload a file</span>
+                        <span >Upload Image</span>
                         <input
                           id="file-upload"
                           accept="image/*"
@@ -197,14 +217,16 @@ const AddProduct = ({ formId, productForm, forNewProduct }) => {
                           className="sr-only"
                         />
                       </label>
-        {/* print image file if exist */}
-                      {/* 
-                      {form?.image && <img className="h-auto w-auto rounded-full" src={form.image} alt="img"></img>} */}
-                      
+                       
                     </div>
                     <p className="text-xs text-gray-500">
                       PNG or JPG/JPEG up to 10MB
                     </p>
+                    {file && (
+                        <p className="text-xs text-green-600"> Image selected : {
+                          file.name
+                        }</p>
+                      )}
                   </div>
                 </div>
               </div>
