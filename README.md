@@ -16,17 +16,21 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Features
 
 
-Completed,
--USER side:
---Registration/Login
---Explore Product, Search bar, Add to cart
---Trending product carousel
--ADMIN sie:
---CRUD operation
+<h3>Completed</h3>
 
-Still working on,
--USER side:
---Shop by categories
---Comment section
---Order, Payment and Status
+<h4>USER side</h4>
+<ul><li>Registration/Login</li>
+<li>Explore Product, Search bar, Add to cart</li>
+<li>Trending product carousel</li>
+ </ul>
+<h4>ADMIN side</h4>
+   <ul>
+     <li>CRUD operation</li></ul>
+  
+
+ <h3>Still working on</h3>
+ <h4>USER side</h4>
+<ul><li>Shop by categories</li>
+<li>Comment section</li>
+<li>Order, Payment and Status</li></ul>
 
