@@ -26,7 +26,7 @@ export default function Layout({ title, children }) {
     console.log(query);
     e.preventDefault();
     if (query) {
-      // router.push(`/api/product?query=${query}`);
+      router.push(`/product?query=${query}`);
     } else {
       router.push("/");
     }
